@@ -1,5 +1,7 @@
 ## Building a Modern Uber Eats Data Pipeline
 
+![Architecture](img/dg.png)
+
 
 ## Dependencies
 
