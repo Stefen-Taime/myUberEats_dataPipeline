@@ -87,7 +87,7 @@ def send_emails_to_mongodb(service):
     messages = search_messages(service, 'from:Reçu Uber noreply@uber.com')
     print(f"Found {len(messages)} messages matching the query.")
 
-    for message in messages[:499]:  # Par exemple, traiter les 10 premiers messages
+    for message in messages[:499]:  # Par exemple, traiter les 500 premiers messages
         subject, sender, body_text = get_message_details(service, message['id'])
         email_data = {
             'message_id': message['id'],
