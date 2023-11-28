@@ -59,7 +59,7 @@ SNOWFLAKE_DATABASE=
 SNOWFLAKE_SCHEMA=PUBLIC
 
 Note: You can create free accounts on Snowflake and MongoDB Atlas to have ready-to-use servers.
-
+```
 ## Testing Connections
 
 Once set up, launch the `mongodb_connection.py` and `snowflake_connection.py` files to test the connections. At this stage, everything should be okay.
