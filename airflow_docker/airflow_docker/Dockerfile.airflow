@@ -1,0 +1,13 @@
+FROM apache/airflow:latest
+
+# Copier le fichier requirements_airflow.txt dans le conteneur
+ADD requirements_airflow.txt .
+
+# Installer les dépendances spécifiées dans le fichier requirements_airflow.txt
+RUN pip install -r requirements_airflow.txt
+
+# Installer les extras d'Apache Airflow pour Amazon
+RUN pip install apache-airflow-providers-snowflake
+RUN pip install apache-airflow-providers-snowflake[common.sql]
+RUN pip install apache-airflow-providers-mongo
+RUN pip install apache-airflow-providers-mongo==3.0.0
