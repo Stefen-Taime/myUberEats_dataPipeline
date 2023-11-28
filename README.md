@@ -42,7 +42,21 @@ The ultimate goal is to have a star schema model like this:
 ## Setting Up Environment Variables
 
 Navigate to the `models` folder, create a `.env` file, and fill in these values:
+## Configuring connections
+To configure connections to MongoDB and Snowflake, follow the steps below.
+### MongoDB connection details
 
+Add these details to your configuration file or environment:
+
+```plaintext
+MONGODB_URI=mongodb+srv://username:password@atlascluster.xxxxxx.mongodb.net/admin?retryWrites=true&w=majority
+
+SNOWFLAKE_USER=
+SNOWFLAKE_PASSWORD=
+SNOWFLAKE_ACCOUNT=xxxx.us-east-1
+SNOWFLAKE_WAREHOUSE=
+SNOWFLAKE_DATABASE=
+SNOWFLAKE_SCHEMA=PUBLIC
 
 Note: You can create free accounts on Snowflake and MongoDB Atlas to have ready-to-use servers.
 
