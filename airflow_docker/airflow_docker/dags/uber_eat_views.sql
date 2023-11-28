@@ -1,51 +1,101 @@
--- Vue sur les Tendances des Commandes au Fil du Temps
-create or replace view UBER_EAT.PUBLIC.ORDER_TRENDS AS
+-- Création de la vue TOTAL_ORDERS_PER_YEAR
+create or replace view UBER_EAT.PUBLIC.TOTAL_ORDERS_PER_YEAR (
+    "Annee",
+    "TotalOrders"
+) as
 SELECT 
     d."Annee",
-    d."Mois",
     COUNT(c."ID_Commande") AS "TotalOrders"
 FROM "COMMANDES_FACT" c
 JOIN "DATE_DIM" d ON c."ID_DateHeure" = d."DateHeure"
-JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
-WHERE r."NomRestaurant" <> 'Nom inconnu'
-GROUP BY d."Annee", d."Mois"
-ORDER BY d."Annee", d."Mois";
+WHERE d."Annee" IN (2021, 2022, 2023)
+GROUP BY d."Annee"
+ORDER BY d."Annee";
 
--- Vue sur le Total des Dépenses par Restaurant et par Type de Paiement
-create or replace view UBER_EAT.PUBLIC.RESTAURANT_SPENDING_BY_PAYMENT_TYPE AS
+-- Création de la vue TOP_3_RESTAURANTS_BY_ORDERS_EXCLUDING_UNKNOWN
+create or replace view UBER_EAT.PUBLIC.TOP_3_RESTAURANTS_BY_ORDERS_EXCLUDING_UNKNOWN (
+    "NomRestaurant",
+    "TotalNumberOfOrders",
+    "OrderRank"
+) as
 SELECT 
+    "NomRestaurant",
+    "TotalNumberOfOrders",
+    "OrderRank"
+FROM (
+    SELECT 
+        r."NomRestaurant",
+        COUNT(c."ID_Commande") AS "TotalNumberOfOrders",
+        RANK() OVER (ORDER BY COUNT(c."ID_Commande") DESC) AS "OrderRank"
+    FROM "COMMANDES_FACT" c
+    JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
+    WHERE r."NomRestaurant" <> 'Nom inconnu'
+    GROUP BY r."NomRestaurant"
+) AS ranked_restaurants
+WHERE "OrderRank" <= 3
+ORDER BY "OrderRank";
+
+-- Création de la vue RESTAURANT_PAYMENT_PREFERENCES_EXCLUDING_UNKNOWN
+create or replace view UBER_EAT.PUBLIC.RESTAURANT_PAYMENT_PREFERENCES(
+	"Annee",
+	"NomRestaurant",
+	"TypePaiement",
+	"NumberOfOrders",
+	"TotalOrderAmount"
+) as
+SELECT 
+    d."Annee",
     r."NomRestaurant",
     p."TypePaiement",
-    SUM(c."MontantTotal") AS "TotalSpending"
+    COUNT(c."ID_Commande") AS "NumberOfOrders",
+    SUM(c."MontantTotal") AS "TotalOrderAmount"
 FROM "COMMANDES_FACT" c
 JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
 JOIN "PAIEMENT_DIM" p ON c."ID_Paiement" = p."ID_Paiement"
-WHERE r."NomRestaurant" <> 'Nom inconnu'
-GROUP BY r."NomRestaurant", p."TypePaiement"
-ORDER BY "TotalSpending" DESC;
-
--- Vue sur la Distribution des Commandes par Heure de la Journée
-create or replace view UBER_EAT.PUBLIC.ORDER_DISTRIBUTION_BY_HOUR AS
-SELECT 
-    d."Heure",
-    COUNT(c."ID_Commande") AS "TotalOrders"
-FROM "COMMANDES_FACT" c
 JOIN "DATE_DIM" d ON c."ID_DateHeure" = d."DateHeure"
-JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
 WHERE r."NomRestaurant" <> 'Nom inconnu'
-GROUP BY d."Heure"
-ORDER BY d."Heure";
+GROUP BY d."Annee", r."NomRestaurant", p."TypePaiement"
+ORDER BY d."Annee", r."NomRestaurant", "NumberOfOrders" DESC, "TotalOrderAmount" DESC;
 
--- Vue sur le Classement Annuel des Dépenses par Restaurant
-create or replace view UBER_EAT.PUBLIC.ANNUAL_RESTAURANT_SPENDING_RANKING AS
+
+-- Création de la vue ANNUAL_SPEND_RANKING_EXCLUDING_UNKNOWN
+create or replace view UBER_EAT.PUBLIC.ANNUAL_SPEND_RANKING_EXCLUDING_UNKNOWN(
+	"Annee",
+	"NomRestaurant",
+	"TotalSpend",
+	"AnnualRank"
+) as
 SELECT 
     d."Annee",
     r."NomRestaurant",
-    SUM(c."MontantTotal") AS "TotalSpending",
+    SUM(c."MontantTotal") AS "TotalSpend",
     RANK() OVER (PARTITION BY d."Annee" ORDER BY SUM(c."MontantTotal") DESC) AS "AnnualRank"
 FROM "COMMANDES_FACT" c
 JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
 JOIN "DATE_DIM" d ON c."ID_DateHeure" = d."DateHeure"
 WHERE r."NomRestaurant" <> 'Nom inconnu'
 GROUP BY d."Annee", r."NomRestaurant"
-ORDER BY d."Annee", "TotalSpending" DESC;
+ORDER BY d."Annee", "TotalSpend" DESC;
+
+-- Création de la vue TOP_3_RESTAURANTS_BY_ORDERS_EXCLUDING_UNKNOWN
+create or replace view UBER_EAT.PUBLIC.TOP_3_RESTAURANTS_BY_ORDERS(
+	"NomRestaurant",
+	"TotalNumberOfOrders",
+	"OrderRank"
+) as
+SELECT 
+    "NomRestaurant",
+    "TotalNumberOfOrders",
+    "OrderRank"
+FROM (
+    SELECT 
+        r."NomRestaurant",
+        COUNT(c."ID_Commande") AS "TotalNumberOfOrders",
+        RANK() OVER (ORDER BY COUNT(c."ID_Commande") DESC) AS "OrderRank"
+    FROM "COMMANDES_FACT" c
+    JOIN "RESTAURANT_DIM" r ON c."ID_Restaurant" = r."ID_Restaurant"
+    GROUP BY r."NomRestaurant"
+) AS ranked_restaurants
+WHERE "OrderRank" <= 3
+ORDER BY "OrderRank";
+
